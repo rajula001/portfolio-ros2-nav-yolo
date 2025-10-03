@@ -1,0 +1,63 @@
+name: portfolio-ros2-nav-yolo
+
+x-common-env: &common-env
+  ROS_DOMAIN_ID: "42"
+  RMW_IMPLEMENTATION: rmw_fastrtps_cpp
+
+services:
+  gazebo:
+    build:
+      context: ../
+      dockerfile: docker/gazebo/Dockerfile
+    container_name: compose-gazebo-1
+    environment:
+      <<: *common-env
+      QT_QPA_PLATFORM: offscreen
+    networks: [ros2_net]
+    tty: true
+    restart: unless-stopped
+
+  robot_localization:
+    build:
+      context: ../
+      dockerfile: docker/robot_localization/Dockerfile
+    depends_on: [gazebo]
+    environment: *common-env
+    networks: [ros2_net]
+    tty: true
+    restart: unless-stopped
+
+  slam:
+    build:
+      context: ../
+      dockerfile: docker/slam_toolbox/Dockerfile
+    depends_on: [gazebo]
+    environment: *common-env
+    networks: [ros2_net]
+    tty: true
+    restart: unless-stopped
+
+  nav2:
+    build:
+      context: ../
+      dockerfile: docker/nav2/Dockerfile
+    depends_on: [gazebo, slam, robot_localization]
+    environment: *common-env
+    networks: [ros2_net]
+    tty: true
+    restart: unless-stopped
+
+  yolo:
+    build:
+      context: ../
+      dockerfile: docker/yolo/Dockerfile
+    depends_on: [gazebo]
+    environment: *common-env
+    networks: [ros2_net]
+    tty: true
+    restart: unless-stopped
+
+networks:
+  ros2_net:
+    driver: bridge
+

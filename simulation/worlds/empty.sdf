@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <world name="empty">
+    <!-- Basic physics -->
+    <physics name="phys" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <!-- Ground plane and light (optional but handy) -->
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/openrobotics/models/Ground Plane</uri>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/openrobotics/models/Sun</uri>
+    </include>
+
+    <!-- MUST-HAVE systems -->
+    <plugin filename="libgz-sim-scene-broadcaster-system.so"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="libgz-sim-physics-system.so"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="libgz-sim-sensors-system.so"
+            name="gz::sim::systems::Sensors"/>
+    <!-- (optional but nice) publish poses -->
+    <plugin filename="libgz-sim-pose-publisher-system.so"
+            name="gz::sim::systems::PosePublisher">
+      <publish_link_pose>true</publish_link_pose>
+      <publish_sensor_pose>true</publish_sensor_pose>
+      <use_pose_vector_msg>true</use_pose_vector_msg>
+    </plugin>
+  </world>
+</sdf>
+

@@ -1,0 +1,55 @@
+amcl: {ros__parameters: {}} # unused when slam:=True
+map_server: {ros__parameters: {}} # unused when slam:=True
+planner_server:
+  ros__parameters:
+    expected_planner_frequency: 1.0
+controller_server:
+  ros__parameters:
+    controller_plugins: ["FollowPath"]
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+bt_navigator:
+  ros__parameters:
+    use_recovery: true
+behavior_server: {ros__parameters: {}}
+waypoint_follower: {ros__parameters: {}}
+global_costmap:
+  ros__parameters:
+    footprint: "[[-0.17, -0.14], [0.17, -0.14], [0.17, 0.14], [-0.17, 0.14]]"
+    global_frame: map
+    robot_base_frame: base_link
+    update_frequency: 5.0
+    publish_frequency: 5.0
+    use_sim_time: true
+    rolling_window: false
+    resolution: 0.05
+    plugin_names: ["static_layer","obstacle_layer","inflation_layer"]
+    plugin_types: ["nav2_costmap_2d::StaticLayer","nav2_costmap_2d::ObstacleLayer","nav2_costmap_2d::InflationLayer"]
+    obstacle_layer:
+      observation_sources: scan
+      scan:
+        topic: /scan
+        clearing: true
+        marking: true
+        data_type: LaserScan
+local_costmap:
+  ros__parameters:
+    global_frame: odom
+    robot_base_frame: base_link
+    rolling_window: true
+    resolution: 0.05
+    width: 6.0
+    height: 6.0
+    update_frequency: 10.0
+    publish_frequency: 10.0
+    use_sim_time: true
+    plugin_names: ["obstacle_layer","inflation_layer"]
+    plugin_types: ["nav2_costmap_2d::ObstacleLayer","nav2_costmap_2d::InflationLayer"]
+    obstacle_layer:
+      observation_sources: scan
+      scan:
+        topic: /scan
+        clearing: true
+        marking: true
+        data_type: LaserScan
+

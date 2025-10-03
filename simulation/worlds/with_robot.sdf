@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <world name="empty">
+    <!-- Only the systems we need -->
+    <plugin filename="libgz-sim8-scene-broadcaster-system.so"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="libgz-sim8-sensors-system.so"
+            name="gz::sim::systems::Sensors"/>
+
+    <!-- Bring the robot in at startup -->
+    <include>
+      <uri>model://mybot</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+  </world>
+</sdf>
