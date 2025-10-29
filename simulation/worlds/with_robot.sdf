@@ -1,11 +1,16 @@
 <?xml version="1.0"?>
 <sdf version="1.9">
   <world name="empty">
-    <!-- Only the systems we need -->
-    <plugin filename="libgz-sim8-scene-broadcaster-system.so"
-            name="gz::sim::systems::SceneBroadcaster"/>
-    <plugin filename="libgz-sim8-sensors-system.so"
+
+    <!-- REQUIRED systems -->
+    <plugin filename="libgz-sim-physics-system.so"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="libgz-sim-user-commands-system.so"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="libgz-sim-sensors-system.so"
             name="gz::sim::systems::Sensors"/>
+    <plugin filename="libgz-sim-scene-broadcaster-system.so"
+            name="gz::sim::systems::SceneBroadcaster"/>
 
     <!-- Bring the robot in at startup -->
     <include>
@@ -14,3 +19,4 @@
     </include>
   </world>
 </sdf>
+

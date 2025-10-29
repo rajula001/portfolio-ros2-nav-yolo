@@ -7,52 +7,81 @@ x-common-env: &common-env
 services:
   gazebo:
     build:
-      context: ../
+      context: ..                 # repo root relative to compose/
       dockerfile: docker/gazebo/Dockerfile
-    container_name: compose-gazebo-1
     environment:
-      <<: *common-env
-      QT_QPA_PLATFORM: offscreen
+      - PATH=/opt/ros/jazzy/opt/gz_tools_vendor/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - GZ_CONFIG_PATH=/opt/ros/jazzy/opt/gz_utils_vendor/share/gz:/opt/ros/jazzy/opt/gz_transport_vendor/share/gz:/opt/ros/jazzy/opt/gz_msgs_vendor/share/gz
+      - GZ_PLUGIN_PATH=/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_tools_vendor/lib:/opt/ros/jazzy/opt/gz_transport_vendor/lib:/opt/ros/jazzy/opt/gz_msgs_vendor/lib
+        - LD_LIBRARY_PATH=/opt/ros/jazzy/opt/gz_utils_vendor/lib:/opt/ros/jazzy/opt/gz_utils_vendor/lib/x86_64-linux-gnu:/opt/ros/jazzy/opt/gz_tools_vendor/lib:/opt/ros/jazzy/opt/gz_transport_vendor/lib:/opt/ros/jazzy/opt/gz_msgs_vendor/lib
+      - QT_QPA_PLATFORM=offscreen
+      - LIBGL_ALWAYS_SOFTWARE=1
+      - MESA_GL_VERSION_OVERRIDE=3.3
+      - GZ_SIM_RESOURCE_PATH=/ws/simulation/models:/ws/simulation/worlds
+      - GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/opt/gz_sim_vendor/lib
     networks: [ros2_net]
     tty: true
-    restart: unless-stopped
+    stdin_open: true
+    command: >
+      bash -lc '
+        source /opt/ros/jazzy/setup.bash &&
+        export QT_QPA_PLATFORM=offscreen LIBGL_ALWAYS_SOFTWARE=1 MESA_GL_VERSION_OVERRIDE=3.3 &&
+        export GZ_SIM_RESOURCE_PATH=/ws/simulation/models:/ws/simulation/worlds &&
+        export GZ_SIM_SYSTEM_PLUGIN_PATH=/opt/ros/jazzy/opt/gz_sim_vendor/lib &&
+        gz sim -r -s -v 4 /ws/simulation/worlds/with_robot.sdf --render-engine ogre2 --headless-rendering
+      '
+
+  bridge:
+    image: ros:jazzy-ros-core
+    depends_on: [gazebo]
+    environment: *common-env
+    networks: [ros2_net]
+    tty: true
+    command: >
+      bash -lc '
+        apt-get update &&
+        apt-get install -y --no-install-recommends ros-jazzy-ros-gz-bridge &&
+        source /opt/ros/jazzy/setup.bash &&
+        ros2 run ros_gz_bridge parameter_bridge \
+          /camera/image@sensor_msgs/msg/Image@gz.msgs.Image \
+          /scan@sensor_msgs/msg/LaserScan@gz.msgs.LaserScan \
+          /imu@sensor_msgs/msg/Imu@gz.msgs.IMU \
+          /odom@nav_msgs/msg/Odometry@gz.msgs.Odometry \
+          /cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist \
+          /clock@rosgraph_msgs/msg/Clock@gz.msgs.Clock
+      '
 
   robot_localization:
-    build:
-      context: ../
-      dockerfile: docker/robot_localization/Dockerfile
-    depends_on: [gazebo]
+    build: { context: ../, dockerfile: docker/robot_localization/Dockerfile }
+    depends_on: [gazebo, bridge]
     environment: *common-env
     networks: [ros2_net]
     tty: true
     restart: unless-stopped
 
   slam:
-    build:
-      context: ../
-      dockerfile: docker/slam_toolbox/Dockerfile
-    depends_on: [gazebo]
+    build: { context: ../, dockerfile: docker/slam_toolbox/Dockerfile }
+    depends_on: [gazebo, bridge]
     environment: *common-env
     networks: [ros2_net]
     tty: true
     restart: unless-stopped
 
-  nav2:
-    build:
-      context: ../
-      dockerfile: docker/nav2/Dockerfile
-    depends_on: [gazebo, slam, robot_localization]
-    environment: *common-env
-    networks: [ros2_net]
-    tty: true
-    restart: unless-stopped
+  # nav2 is not ready yet; leave disabled or ensure the Dockerfile exists before enabling
+  # nav2:
+  #   build: { context: ../, dockerfile: docker/nav2/Dockerfile }
+  #   depends_on: [gazebo, bridge, slam, robot_localization]
+  #   environment: *common-env
+  #   networks: [ros2_net]
+  #   tty: true
+  #   restart: unless-stopped
 
   yolo:
-    build:
-      context: ../
-      dockerfile: docker/yolo/Dockerfile
-    depends_on: [gazebo]
-    environment: *common-env
+    build: { context: ../, dockerfile: docker/yolo/Dockerfile }
+    depends_on: [gazebo, bridge]
+    environment:
+      <<: *common-env
+      USE_SIM_TIME: "true"
     networks: [ros2_net]
     tty: true
     restart: unless-stopped
