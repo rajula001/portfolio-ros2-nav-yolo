@@ -1,112 +1,45 @@
 <?xml version="1.0"?>
 <sdf version="1.9">
-  <model name="mybot">
+  <model name="mybot_cpu">
     <static>false</static>
-    <pose>0 0 0.05 0 0 0</pose>
 
-    <!-- Base -->
     <link name="base_link">
+      <pose>0 0 0.15 0 0 0</pose>
+
       <inertial>
-        <mass>4.0</mass>
+        <mass>1.0</mass>
         <inertia>
-          <ixx>0.10</ixx><ixy>0.0</ixy><ixz>0.0</ixz>
-          <iyy>0.15</iyy><iyz>0.0</iyz>
-          <izz>0.20</izz>
+          <ixx>0.05</ixx><iyy>0.05</iyy><izz>0.08</izz>
         </inertia>
       </inertial>
-      <collision name="base_collision">
-        <geometry>
-          <box><size>0.40 0.30 0.12</size></box>
-        </geometry>
-      </collision>
-      <visual name="base_visual">
-        <geometry>
-          <box><size>0.40 0.30 0.12</size></box>
-        </geometry>
-      </visual>
-    </link>
 
-    <!-- Left wheel -->
-    <link name="left_wheel">
-      <pose>0.0 0.15 0.05 0 0 0</pose>
-      <inertial>
-        <mass>0.5</mass>
-        <inertia><ixx>0.002</ixx><iyy>0.002</iyy><izz>0.002</izz></inertia>
-      </inertial>
-      <collision name="left_wheel_collision">
-        <geometry>
-          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
-        </geometry>
+      <collision name="col">
+        <geometry><cylinder><radius>0.15</radius><length>0.10</length></cylinder></geometry>
       </collision>
-      <visual name="left_wheel_visual">
-        <geometry>
-          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
-        </geometry>
+      <visual name="vis">
+        <geometry><cylinder><radius>0.15</radius><length>0.10</length></cylinder></geometry>
+        <material><diffuse>0.2 0.2 0.8 1</diffuse></material>
       </visual>
-    </link>
-    <joint name="left_wheel_joint" type="revolute">
-      <parent>base_link</parent>
-      <child>left_wheel</child>
-      <axis><xyz>0 1 0</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
-    </joint>
 
-    <!-- Right wheel -->
-    <link name="right_wheel">
-      <pose>0.0 -0.15 0.05 0 0 0</pose>
-      <inertial>
-        <mass>0.5</mass>
-        <inertia><ixx>0.002</ixx><iyy>0.002</iyy><izz>0.002</izz></inertia>
-      </inertial>
-      <collision name="right_wheel_collision">
-        <geometry>
-          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
-        </geometry>
-      </collision>
-      <visual name="right_wheel_visual">
-        <geometry>
-          <cylinder><radius>0.05</radius><length>0.03</length></cylinder>
-        </geometry>
-      </visual>
-    </link>
-    <joint name="right_wheel_joint" type="revolute">
-      <parent>base_link</parent>
-      <child>right_wheel</child>
-      <axis><xyz>0 1 0</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis>
-    </joint>
-
-    <!-- Camera -->
-    <link name="camera_link">
-      <pose>0.15 0 0.15 0 0 0</pose>
-      <inertial><mass>0.05</mass><inertia><ixx>1e-5</ixx><iyy>1e-5</iyy><izz>1e-5</izz></inertia></inertial>
-      <sensor name="camera" type="camera">
+      <!-- IMU driven by the Sensors system -->
+      <sensor name="imu" type="imu">
         <always_on>true</always_on>
-        <update_rate>15</update_rate>
-        <camera>
-          <horizontal_fov>1.05</horizontal_fov>
-          <image><width>640</width><height>480</height><format>R8G8B8</format></image>
-          <clip><near>0.05</near><far>50.0</far></clip>
-        </camera>
-        <topic>/camera/image</topic>
+        <update_rate>50</update_rate>
+        <topic>/imu</topic>
       </sensor>
-    </link>
-    <joint name="camera_joint" type="fixed">
-      <parent>base_link</parent><child>camera_link</child>
-    </joint>
 
-    <!-- 2D LiDAR -->
-    <link name="lidar_link">
-      <pose>0.12 0 0.14 0 0 0</pose>
-      <inertial><mass>0.05</mass><inertia><ixx>1e-5</ixx><iyy>1e-5</iyy><izz>1e-5</izz></inertia></inertial>
-      <sensor name="lidar" type="gpu_lidar">
+      <!-- CPU ray LiDAR (not GPU) -->
+      <sensor name="lidar" type="ray">
         <always_on>true</always_on>
-        <update_rate>15</update_rate>
+        <update_rate>10</update_rate>
+        <topic>/scan</topic>
         <ray>
           <scan>
             <horizontal>
               <samples>720</samples>
               <resolution>1</resolution>
               <min_angle>-3.14159</min_angle>
-              <max_angle>3.14159</max_angle>
+              <max_angle> 3.14159</max_angle>
             </horizontal>
           </scan>
           <range>
@@ -115,47 +48,7 @@
             <resolution>0.01</resolution>
           </range>
         </ray>
-        <topic>/scan</topic>
       </sensor>
     </link>
-    <joint name="lidar_joint" type="fixed">
-      <parent>base_link</parent><child>lidar_link</child>
-    </joint>
-
-    <!-- IMU -->
-    <link name="imu_link">
-      <pose>0 0 0.12 0 0 0</pose>
-      <inertial>
-        <mass>0.05</mass>
-        <inertia>
-          <ixx>1e-5</ixx><iyy>1e-5</iyy><izz>1e-5</izz>
-          <ixy>0</ixy><ixz>0</ixz><iyz>0</iyz>
-        </inertia>
-      </inertial>
-      <sensor name="imu_sensor" type="imu">
-        <always_on>true</always_on>
-        <update_rate>200</update_rate>
-        <topic>/imu</topic>
-        <imu/>
-      </sensor>
-    </link>
-    <joint name="imu_fixed" type="fixed">
-      <parent>base_link</parent><child>imu_link</child>
-    </joint>
-
-    <!-- Diff-drive (gz-sim8) -->
-    <plugin filename="libgz-sim-diff-drive-system.so" name="gz::sim::systems::DiffDrive">
-      <left_joint>left_wheel_joint</left_joint>
-      <right_joint>right_wheel_joint</right_joint>
-      <wheel_separation>0.30</wheel_separation>
-      <wheel_radius>0.05</wheel_radius>
-      <topic>/cmd_vel</topic>
-      <odom_topic>/odom</odom_topic>
-      <odom_frame>odom</odom_frame>
-      <robot_base_frame>base_link</robot_base_frame>
-      <publish_odom>true</publish_odom>
-      <publish_tf>false</publish_tf>
-    </plugin>
-
   </model>
 </sdf>

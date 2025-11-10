@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<sdf version="1.9">
+  <model name="mybot_cpu">
+    <static>false</static>
+
+    <link name="base_link">
+      <pose>0 0 0.15 0 0 0</pose>
+      <inertial>
+        <mass>1.0</mass>
+        <inertia>
+          <ixx>0.05</ixx><iyy>0.05</iyy><izz>0.08</izz>
+        </inertia>
+      </inertial>
+
+      <collision name="col">
+        <geometry><cylinder><radius>0.15</radius><length>0.10</length></cylinder></geometry>
+      </collision>
+      <visual name="vis">
+        <geometry><cylinder><radius>0.15</radius><length>0.10</length></cylinder></geometry>
+      </visual>
+    </link>
+
+    <!-- IMU system plugin -->
+    <plugin name="gz::sim::systems::Imu" filename="gz-sim-imu-system">
+      <parent_link>base_link</parent_link>
+      <update_rate>50</update_rate>
+      <topic>/imu</topic>
+    </plugin>
+
+    <!-- CPU ray lidar system plugin -->
+    <plugin name="gz::sim::systems::RaySensor" filename="gz-sim-ray-sensor-system">
+      <parent_link>base_link</parent_link>
+      <update_rate>10</update_rate>
+      <horizontal_samples>720</horizontal_samples>
+      <horizontal_resolution>1</horizontal_resolution>
+      <horizontal_min_angle>-3.14159</horizontal_min_angle>
+      <horizontal_max_angle>3.14159</horizontal_max_angle>
+      <vertical_samples>1</vertical_samples>
+      <vertical_min_angle>0.0</vertical_min_angle>
+      <vertical_max_angle>0.0</vertical_max_angle>
+      <range_min>0.12</range_min>
+      <range_max>10.0</range_max>
+      <range_resolution>0.01</range_resolution>
+      <topic>/world/empty_world/model/mybot_cpu/link/base_link/sensor/lidar/scan
+      </topic>
+    </plugin>
+  </model>
+</sdf>
